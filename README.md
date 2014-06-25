@@ -3,8 +3,7 @@ rtdgui
 Spencer Hatch
 May 7, 2014 12:40pm
 
-This is the... rtdgui code. Note that you must install the (included) FLU libraries! See the README for the complex_proc repository for an example of how to use this thing. I don't know how to use it myself and no one has documented it, so I am just pointing you in a possible direction...
-
+This is the... rtdgui code. Note that you must install the (included) FLU libraries! See the README for the complex_proc repository for an example of how to use this thing. As another example  (that is confirmed to be working!) this repository also includes two little bash scripts written by MPD for running both data acquisition and real-time display on Merry. They are updated so as to be functional with Merry as he stands in Jun 2014.
 
 A note on compiling the FLU library (Jun 23, 2014)
 ---------------------------------------------------
