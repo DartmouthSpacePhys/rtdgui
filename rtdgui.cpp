@@ -29,17 +29,24 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include "imgsav.h"
+
 using namespace std;
 
 int sx = 1430, sy = 872, plot_max = 60, plot_min = 0,
 	gray_max = 60, gray_min = 0;
-static char site_str[50];
+//static char site_str[50];
 char timestamp_string[100], config_filename[200], tmp_dir[100];
 char instring[100];
 static struct tm *gmt;
 time_t t;
 
 Fl_Output *cur_time = (Fl_Output *) 0;
+
+Fl_Button *savspec1_button, *savspec2_button;
+int savspec1 = 1, savspec2 = 2;
+
 Fl_Round_Button *show_ch1, *show_ch2, *show_ch3, *show_ch4,
 	*o1gray1, *o1gray2, *o1gray3, *o1gray4,
 	*o2gray1, *o2gray2, *o2gray3, *o2gray4, *show_time_series;
@@ -75,6 +82,37 @@ void grayscale_level_callback(Fl_Widget*, void*) {
 	ds2->label(outstring);
 }
 
+void savspec_callback(Fl_Widget *, void *v) {
+  int *savspec;
+  char filename[100];
+
+  savspec = (int *)v;
+  time(&t);
+  gmt = gmtime(&t);
+  sprintf(filename, "rtdgui_spec%i-%04i%02i%02i-%02i%02i%02i.png",*savspec,gmt->tm_year+1900, gmt->tm_mon+1, gmt->tm_mday, gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
+
+  if( *savspec == 1 ) {
+    if( (img1) && ( img1->count() > 0 ) ) {
+      printf("Bout to save Ch 1 spec to %s\n",filename);
+      ImageHandler::save(img1,filename);
+    } 
+    else {
+      printf("Couldn't save spectrum %i! No data?\n",*savspec);
+    }
+  }   
+  
+  if( *savspec == 2 ) {
+    if( (img2) && ( img2->count() > 0 ) ){
+      printf("Bout to save Ch 2 spec to %s\n",filename);
+      ImageHandler::save(img2,filename);
+    } 
+    else {
+      printf("Couldn't save spectrum %i! No data?\n",*savspec);
+    }
+  }
+
+}
+
 void WinQuit_CB(Fl_Widget*, void*) {
 	FILE *out;
 	sprintf(instring, "%s/levels.grayscale", tmp_dir);
@@ -105,6 +143,8 @@ int read_level_files() {
 		fscanf(in, "%d %d", &plot_min, &plot_max);
 		fclose(in);
 	}
+	
+	return (1);
 }
 
 int read_input_file() {
@@ -123,7 +163,7 @@ int read_input_file() {
 		if (strncmp(line, "TMP", 3) == 0) {
 			fgets(tmp_dir, sizeof(tmp_dir), in);
 			tmp_dir[strlen(tmp_dir) - 1] = 0;
-			fprintf(stderr, "\nFound TMP_DIR=%s", tmp_dir);
+			fprintf(stderr, "\nFound TMP_DIR=%s\n", tmp_dir);
 		}
 	}
 	fclose(in);
@@ -135,7 +175,7 @@ void load_data(const char *n) {
 	FILE * in;
 	float y1[512], y2[512], y3[512], y4[512], x[512];
 	int i, s1, s2, s3, s4;
-	static Ca_PolyLine *P_P = 0;
+	//	static Ca_PolyLine *P_P = 0;
 
 	in = fopen(data_fname, "r");
 	if (in != NULL) {
@@ -165,7 +205,7 @@ void load_data(const char *n) {
 }
 
 void load_file(const char *n, const char *m) {
-	float scale = 1.0, ratio = 1.0;
+  //	float scale = 1.0, ratio = 1.0;
 	if (img1) {
 		img1->release();
 		img1 = 0L;
@@ -214,40 +254,40 @@ void close_cb(Fl_Widget* o, void*) {
 
 //--------------------------------------------
 void callback(void*) {
-	FILE *out;
-	time(&t);
-	gmt = gmtime(&t);
-	sprintf(timestamp_string, "%s", asctime(gmt));
-	timestamp_string[strlen(timestamp_string) - 1] = 0;
-	sprintf(timestamp_string, "%s UT", timestamp_string);
-	cur_time->value(timestamp_string);
-	if (o1gray1->value() == 1)
-		sprintf(fname, "%s/test.image1", tmp_dir);
-	if (o1gray2->value() == 1)
-		sprintf(fname, "%s/test.image2", tmp_dir);
-	if (o1gray3->value() == 1)
-		sprintf(fname, "%s/test.image3", tmp_dir);
-	if (o1gray4->value() == 1)
-		sprintf(fname, "%s/test.image4", tmp_dir);
-	if (o2gray1->value() == 1)
-		sprintf(fname2, "%s/test.image1", tmp_dir);
-	if (o2gray2->value() == 1)
-		sprintf(fname2, "%s/test.image2", tmp_dir);
-	if (o2gray3->value() == 1)
-		sprintf(fname2, "%s/test.image3", tmp_dir);
-	if (o2gray4->value() == 1)
-		sprintf(fname2, "%s/test.image4", tmp_dir);
-	load_file(fname,fname2);
-	load_data(data_fname);
-	sprintf(instring, "%s/levels.grayscale", tmp_dir);
-	out = fopen(instring, "w");
-	fprintf(out, "%d %d", gray_min, gray_max);
-	fclose(out);
-	sprintf(instring, "%s/levels.plot", tmp_dir);
-	out = fopen(instring, "w");
-	fprintf(out, "%d %d", plot_min, plot_max);
-	fclose(out);
-	Fl::repeat_timeout(1.0, callback);
+  FILE *out;
+  time(&t);
+  gmt = gmtime(&t);
+  sprintf(timestamp_string, "%s", asctime(gmt));
+  timestamp_string[strlen(timestamp_string) - 1] = 0;
+  sprintf(timestamp_string, "%s UT", timestamp_string);
+  cur_time->value(timestamp_string);
+  if (o1gray1->value() == 1)
+    sprintf(fname, "%s/test.image1", tmp_dir);
+  if (o1gray2->value() == 1)
+    sprintf(fname, "%s/test.image2", tmp_dir);
+  if (o1gray3->value() == 1)
+    sprintf(fname, "%s/test.image3", tmp_dir);
+  if (o1gray4->value() == 1)
+    sprintf(fname, "%s/test.image4", tmp_dir);
+  if (o2gray1->value() == 1)
+    sprintf(fname2, "%s/test.image1", tmp_dir);
+  if (o2gray2->value() == 1)
+    sprintf(fname2, "%s/test.image2", tmp_dir);
+  if (o2gray3->value() == 1)
+    sprintf(fname2, "%s/test.image3", tmp_dir);
+  if (o2gray4->value() == 1)
+    sprintf(fname2, "%s/test.image4", tmp_dir);
+  load_file(fname,fname2);
+  load_data(data_fname);
+  sprintf(instring, "%s/levels.grayscale", tmp_dir);
+  out = fopen(instring, "w");
+  fprintf(out, "%d %d", gray_min, gray_max);
+  fclose(out);
+  sprintf(instring, "%s/levels.plot", tmp_dir);
+  out = fopen(instring, "w");
+  fprintf(out, "%d %d", plot_min, plot_max);
+  fclose(out);
+  Fl::repeat_timeout(1.0, callback);
 }
 
 //--------------------------------------------
@@ -297,7 +337,7 @@ int main(int argc, char **argv) {
 	fprintf(stderr, "\n%s", instring);
 	out = fopen(instring, "w");
 	if (out != NULL)
-		fprintf(out, "%lu", getpid());
+	  fprintf(out, "%i", getpid());
 	else {
 		fprintf(stderr, "ERROR!! %s", instring);
 		exit(0);
@@ -311,11 +351,12 @@ int main(int argc, char **argv) {
 
 	Fl::add_timeout(2.0, callback);
 	Fl_Double_Window *win =
-			new Fl_Double_Window(sx, sy, "HF2 Reciever Display");
+			new Fl_Double_Window(sx, sy, "HF2 Receiver Display");
 	win->begin();
 	spec1 = new Ca_Canvas(10, 42, 670, 512, "");
 	spec1->box(FL_DOWN_BOX);
 	spec1->align(FL_ALIGN_TOP);
+
 	spec2 = new Ca_Canvas(720, 42, 670, 512, "");
 	spec2->box(FL_DOWN_BOX);
 	spec2->align(FL_ALIGN_TOP);
@@ -370,6 +411,14 @@ int main(int argc, char **argv) {
 	counts->major_step(10);
 	counts->label_step(1);
 	counts->label_format("%.0f");
+
+	savspec1_button = new Fl_Button(10, 556, 170, 25, "Save spectrogram 1");
+	savspec1_button->when(FL_WHEN_RELEASE);
+	savspec1_button->callback(savspec_callback,&savspec1);
+
+	savspec2_button = new Fl_Button(720, 556, 170, 25, "Save spectrogram 2");
+	savspec2_button->when(FL_WHEN_RELEASE);
+	savspec2_button->callback(savspec_callback,&savspec2);
 
 	{
 		int specselx = 1350, specsely = 600;
@@ -509,7 +558,7 @@ int main(int argc, char **argv) {
 	} */
 	ds = new Flu_Dual_Slider(1150, 554, 130, 20, "");
 	ds->type(FL_HOR_NICE_SLIDER);
-	ds->high_value(plot_max / 100.);
+	ds->high_value( plot_max / 100. );
 	ds->low_value(plot_min / 100.);
 	sprintf(outstring1, "Plot Range %d:%d",
 			(int) ((100* ds ->low_value()) + .5), (int) ((100*
@@ -519,7 +568,7 @@ int main(int argc, char **argv) {
 
 	ds2 = new Flu_Dual_Slider(450, 4, 180, 20, "");
 	ds2->type(FL_HOR_NICE_SLIDER);
-	ds2->high_value(gray_max / 100.);
+	ds2->high_value( ( gray_max + 20 ) / 100.);
 	ds2->low_value(gray_min / 100.);
 	sprintf(outstring2, "Grayscale Levels %d:%d", (int) ((100*
 			ds2 ->low_value()) + .5), (int) ((100* ds2 ->high_value()) + .5));

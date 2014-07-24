@@ -1255,7 +1255,7 @@ void Ca_PolyLine::draw(){
 	temp=(Ca_PolyLine *)previous;
 	while(temp){
 		fl_vertex(temp->x_axis_->position(temp->x),temp->y_axis_->position(temp->y));
-		if((temp->line_style != style)||(temp->color!=c)||(temp->line_width!=size)){
+		if((temp->line_style != style)||((int)temp->color!=c)||(temp->line_width!=size)){
 			fl_end_line();
 			c=temp->color;
 			style=temp->line_style;
