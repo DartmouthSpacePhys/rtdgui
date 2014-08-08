@@ -37,7 +37,7 @@ using namespace std;
 int sx = 1430, sy = 872, plot_max = 60, plot_min = 0,
 	gray_max = 60, gray_min = 0;
 //static char site_str[50];
-char timestamp_string[100], config_filename[200], tmp_dir[100];
+char timestamp_string[100], config_filename[200], tmp_dir[100], prefix[100];
 char instring[100];
 static struct tm *gmt;
 time_t t;
@@ -115,15 +115,15 @@ void savspec_callback(Fl_Widget *, void *v) {
 
 void WinQuit_CB(Fl_Widget*, void*) {
 	FILE *out;
-	sprintf(instring, "%s/levels.grayscale", tmp_dir);
+	sprintf(instring, "%s/%s_levels.grayscale", tmp_dir, prefix);
 	out = fopen(instring, "w");
 	fprintf(out, "%d %d", gray_min, gray_max);
 	fclose(out);
-	sprintf(instring, "%s/levels.plot", tmp_dir);
+	sprintf(instring, "%s/%s_levels.plot", tmp_dir, prefix);
 	out = fopen(instring, "w");
 	fprintf(out, "%d %d", plot_min, plot_max);
 	fclose(out);
-	sprintf(instring, "%s/hf2_display_running", tmp_dir);
+	sprintf(instring, "%s/%s_hf2_display_running", tmp_dir, prefix);
 	remove(instring);
 	exit(0);
 }
@@ -131,13 +131,13 @@ void WinQuit_CB(Fl_Widget*, void*) {
 int read_level_files() {
 	FILE * in;
 
-	sprintf(instring, "%s/levels.grayscale", tmp_dir);
+	sprintf(instring, "%s/%s_levels.grayscale", tmp_dir, prefix);
 	in = fopen(instring, "r");
 	if (in != NULL) {
 		fscanf(in, "%d %d", &gray_min, &gray_max);
 		fclose(in);
 	}
-	sprintf(instring, "%s/levels.plot", tmp_dir);
+	sprintf(instring, "%s/%s_levels.plot", tmp_dir, prefix);
 	in = fopen(instring, "r");
 	if (in != NULL) {
 		fscanf(in, "%d %d", &plot_min, &plot_max);
@@ -262,28 +262,28 @@ void callback(void*) {
   sprintf(timestamp_string, "%s UT", timestamp_string);
   cur_time->value(timestamp_string);
   if (o1gray1->value() == 1)
-    sprintf(fname, "%s/test.image1", tmp_dir);
+    sprintf(fname, "%s/%s.image1", tmp_dir, prefix);
   if (o1gray2->value() == 1)
-    sprintf(fname, "%s/test.image2", tmp_dir);
+    sprintf(fname, "%s/%s.image2", tmp_dir, prefix);
   if (o1gray3->value() == 1)
-    sprintf(fname, "%s/test.image3", tmp_dir);
+    sprintf(fname, "%s/%s.image3", tmp_dir, prefix);
   if (o1gray4->value() == 1)
-    sprintf(fname, "%s/test.image4", tmp_dir);
+    sprintf(fname, "%s/%s.image4", tmp_dir, prefix);
   if (o2gray1->value() == 1)
-    sprintf(fname2, "%s/test.image1", tmp_dir);
+    sprintf(fname2, "%s/%s.image1", tmp_dir, prefix);
   if (o2gray2->value() == 1)
-    sprintf(fname2, "%s/test.image2", tmp_dir);
+    sprintf(fname2, "%s/%s.image2", tmp_dir, prefix);
   if (o2gray3->value() == 1)
-    sprintf(fname2, "%s/test.image3", tmp_dir);
+    sprintf(fname2, "%s/%s.image3", tmp_dir, prefix);
   if (o2gray4->value() == 1)
-    sprintf(fname2, "%s/test.image4", tmp_dir);
+    sprintf(fname2, "%s/%s.image4", tmp_dir, prefix);
   load_file(fname,fname2);
   load_data(data_fname);
-  sprintf(instring, "%s/levels.grayscale", tmp_dir);
+  sprintf(instring, "%s/%s_levels.grayscale", tmp_dir, prefix);
   out = fopen(instring, "w");
   fprintf(out, "%d %d", gray_min, gray_max);
   fclose(out);
-  sprintf(instring, "%s/levels.plot", tmp_dir);
+  sprintf(instring, "%s/%s_levels.plot", tmp_dir, prefix);
   out = fopen(instring, "w");
   fprintf(out, "%d %d", plot_min, plot_max);
   fclose(out);
@@ -299,17 +299,21 @@ int main(int argc, char **argv) {
 	FILE *out;
 
 	/* read location for the config file if given */
-	if (argc == 2)
-		sprintf(config_filename, "%s", argv[1]);
-	else
-		sprintf(config_filename,
-				"/home/radio/hf2_files/config/hf2_config.input");
+	if (argc == 2 || argc == 3 ) {
+	  sprintf(config_filename, "%s", argv[1]);
+	  if ( argc == 3 ) sprintf(prefix, "%s", argv[2]);
+	  else sprintf(prefix, "test");
+	}
+	else {
+	  sprintf(config_filename,
+		  "/home/radio/hf2_files/config/hf2_config.input");
+	}
 	read_input_file();
-	sprintf(data_fname, "%s/test.data", tmp_dir);
+	sprintf(data_fname, "%s/%s.data", tmp_dir, prefix);
 
 	nice(10);
 
-	sprintf(instring, "%s/hf2_display_running", tmp_dir);
+	sprintf(instring, "%s/%s_hf2_display_running", tmp_dir, prefix);
 	out = fopen(instring, "r");
 	if (out != NULL) {
 		fprintf(stderr, "\nhf2_display found a lock file ... ");
@@ -328,12 +332,12 @@ int main(int argc, char **argv) {
 			}
 			fclose(out);
 		}
-		sprintf(instring, "%s/hf2_display_running", tmp_dir);
+		sprintf(instring, "%s/%s_hf2_display_running", tmp_dir, prefix);
 		remove(instring);
 		fprintf(stderr, "\n  Process Does Not Exist. Lock File Removed\n");
 	}
 
-	sprintf(instring, "%s//hf2_display_running", tmp_dir);
+	sprintf(instring, "%s//%s_hf2_display_running", tmp_dir, prefix);
 	fprintf(stderr, "\n%s", instring);
 	out = fopen(instring, "w");
 	if (out != NULL)
@@ -568,7 +572,7 @@ int main(int argc, char **argv) {
 
 	ds2 = new Flu_Dual_Slider(450, 4, 180, 20, "");
 	ds2->type(FL_HOR_NICE_SLIDER);
-	ds2->high_value( ( gray_max + 20 ) / 100.);
+	ds2->high_value( ( gray_max ) / 100.);
 	ds2->low_value(gray_min / 100.);
 	sprintf(outstring2, "Grayscale Levels %d:%d", (int) ((100*
 			ds2 ->low_value()) + .5), (int) ((100* ds2 ->high_value()) + .5));
