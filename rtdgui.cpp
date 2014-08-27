@@ -370,10 +370,12 @@ int main(int argc, char **argv) {
 	freq2->align(FL_ALIGN_TOP_RIGHT);
 	freq2->axis_align(CA_RIGHT);
 	freq2->scale(CA_LIN);
-	freq2->minimum(40);
-	freq2->maximum(5000);
+	freq2->minimum(283);
+	freq2->maximum(617);
+	//freq2->minimum(0);
+	//freq2->maximum(5000);
 	freq2->label_format("%g");
-	freq2->tick_interval(-200); //fixed ticks setting
+	freq2->tick_interval(-20); //fixed ticks setting
 	freq2->major_step(1);
 	freq2->label_step(1);
 	freq2->axis_color(FL_BLACK);
@@ -383,10 +385,13 @@ int main(int argc, char **argv) {
 	freq3->align(FL_ALIGN_TOP_RIGHT);
 	freq3->axis_align(CA_RIGHT);
 	freq3->scale(CA_LIN);
-	freq3->minimum(40);
-	freq3->maximum(5000);
+	freq3->minimum(583);
+	freq3->maximum(917);
+	//freq3->minimum(0);
+	//freq3->maximum(5000);
 	freq3->label_format("%g");
-	freq3->tick_interval(-200); //fixed ticks setting
+		freq3->tick_interval(-20); //fixed ticks setting
+		//freq3->tick_interval(-200); //fixed ticks setting
 	freq3->major_step(1);
 	freq3->label_step(1);
 	freq3->axis_color(FL_BLACK);
