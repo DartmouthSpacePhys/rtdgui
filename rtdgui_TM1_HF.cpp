@@ -35,9 +35,9 @@
 using namespace std;
 
 //uncomment this line for big monitor
-//int sx = 1430, sy = 872, plot_max = 60, plot_min = 0,
+int sx = 1200, sy = 872, plot_max = 60, plot_min = 0;
 //uncomment this line for square monitor
-int sx = 1024, sy = 768, plot_max = 60, plot_min = 0;
+//int sx = 1024, sy = 768, plot_max = 60, plot_min = 0;
 int gray_max = 60, gray_min = 0;
 //static char site_str[50];
 char timestamp_string[100], config_filename[200], tmp_dir[100], prefix[100];
@@ -48,27 +48,27 @@ time_t t;
 Fl_Output *cur_time = (Fl_Output *) 0;
 
 Fl_Button *savspec1_button, *savspec2_button;
-int savspec1 = 1, savspec2 = 2;
+int savspec1 = 1;
 
-Fl_Round_Button *show_ch1, *show_ch2, *show_ch3, *show_ch4,
+Fl_Round_Button *show_ch1,
 	*o1gray1, *o1gray2, *o1gray3, *o1gray4,
-	*o2gray1, *o2gray2, *o2gray3, *o2gray4, *show_time_series;
+	*show_time_series;
 Fl_Double_Window *win;
 Flu_Dual_Slider *ds, *ds2;
 
 FILE *in, *current;
-char fname[200], fname2[200], n_fname[200], p_string[200], data_fname[200];
+char fname[200], n_fname[200], p_string[200], data_fname[200];
 
 //additions by Spencer Hatch for config file, displays
 char disp_name[200];
-long int freq_min, freq_max;
+long int freq_min = 0, freq_max = 1000, freq_step=40;
 
 Fl_Shared_Image *img1, *img2;
 unsigned long t_count, c_count;
 
-Ca_Canvas *canvas, *spec1, *spec2;
+Ca_Canvas *canvas, *spec1;
 Ca_X_Axis *freq1;
-Ca_Y_Axis *counts, *freq2, *freq3;
+Ca_Y_Axis *counts, *freq2;
 
 void plot_level_callback(Fl_Widget*, void*) {
 	static char outstring[50];
@@ -175,11 +175,9 @@ int read_input_file() {
 		}
 		if (strncmp(line, "DISP_NAME", 6) == 0) {
 			fgets(disp_name, sizeof(disp_name), in);
-			tmp_dir[strlen(disp_name) - 1] = 0;
+			disp_name[strlen(disp_name) - 1] = 0;
 			fprintf(stderr, "\nFound DISP_NAME=%s\n", disp_name);
-		} else {
-		  sprintf(disp_name,"HF2 Display Receiver");
-		}
+		} 
 		if (strncmp(line, "MAX_FREQ", 6) == 0) {
 			fgets(line, sizeof(line), in);
 			freq_max=atoi(line);
@@ -189,6 +187,11 @@ int read_input_file() {
 			fgets(line, sizeof(line), in);
 			freq_min=atoi(line);
 			fprintf(stderr, "\nFound MIN_FREQ=%li\n", freq_min);
+		}
+		if (strncmp(line, "STEP_FREQ", 6) == 0) {
+			fgets(line, sizeof(line), in);
+			freq_step=atoi(line);
+			fprintf(stderr, "\nFound STEP_FREQ=%li\n", freq_step);
 		}
 		if (strncmp(line, "MAX_GRAY", 6) == 0) {
 			fgets(line, sizeof(line), in);
@@ -209,7 +212,7 @@ int read_input_file() {
 void load_data(const char *n) {
 	FILE * in;
 	float y1[512], y2[512], y3[512], y4[512], x[512];
-	int i, s1, s2, s3, s4;
+	int i, s1;
 	//	static Ca_PolyLine *P_P = 0;
 
 	in = fopen(data_fname, "r");
@@ -218,19 +221,10 @@ void load_data(const char *n) {
 		canvas->clear();
 		counts->current();
 		s1 = ((Fl_Button *) show_ch1)->value();
-		s2 = ((Fl_Button *) show_ch2)->value();
-		s3 = ((Fl_Button *) show_ch3)->value();
-		s4 = ((Fl_Button *) show_ch4)->value();
 		for (i = 0; i < 512; i++) {
 			fscanf(in, "%f %f %f %f %f", x + i, y1 + i, y2 + i, y3 + i, y4 + i);
 			if (s1)
 				new Ca_Point(x[i], y1[i], FL_YELLOW, CA_DIAMOND | CA_BORDER, 2);
-			if (s2)
-				new Ca_Point(x[i], y2[i], FL_BLUE, CA_DIAMOND | CA_BORDER, 2);
-			if (s3)
-				new Ca_Point(x[i], y3[i], FL_RED, CA_DIAMOND | CA_BORDER, 2);
-			if (s4)
-				new Ca_Point(x[i], y4[i], FL_GREEN, CA_DIAMOND | CA_BORDER, 2);
 		}
 		fclose(in);
 		canvas->redraw();
@@ -239,18 +233,13 @@ void load_data(const char *n) {
 	}
 }
 
-void load_file(const char *n, const char *m) {
+void load_file(const char *n) {
   //	float scale = 1.0, ratio = 1.0;
 	if (img1) {
 		img1->release();
 		img1 = 0L;
 	}
-	if (img2) {
-		img2->release();
-		img2 = 0L;
-	}
 	img1 = Fl_Shared_Image::get(n);
-	img2 = Fl_Shared_Image::get(m);
 	if (!img1) {
 		spec1->label(""); // show an empty document
 		spec1->labelsize(64);
@@ -266,20 +255,6 @@ void load_file(const char *n, const char *m) {
 	spec1->image(img1);
 	spec1->redraw();
 
-	if (!img2) {
-		spec2->label(""); // show an empty document
-		spec2->labelsize(64);
-		spec2->labelcolor(FL_LIGHT2);
-		spec2->image(0);
-		spec2->redraw();
-		return;
-	}
-	spec2->label(0);
-	spec2->labelsize(1);
-	spec2->align(FL_ALIGN_IMAGE_OVER_TEXT);
-	spec2->labelcolor(FL_FOREGROUND_COLOR);
-	spec2->image(img2);
-	spec2->redraw();
 }
 
 //--------------------------------------------
@@ -304,15 +279,7 @@ void callback(void*) {
     sprintf(fname, "%s/%s.image3", tmp_dir, prefix);
   if (o1gray4->value() == 1)
     sprintf(fname, "%s/%s.image4", tmp_dir, prefix);
-  if (o2gray1->value() == 1)
-    sprintf(fname2, "%s/%s.image1", tmp_dir, prefix);
-  if (o2gray2->value() == 1)
-    sprintf(fname2, "%s/%s.image2", tmp_dir, prefix);
-  if (o2gray3->value() == 1)
-    sprintf(fname2, "%s/%s.image3", tmp_dir, prefix);
-  if (o2gray4->value() == 1)
-    sprintf(fname2, "%s/%s.image4", tmp_dir, prefix);
-  load_file(fname,fname2);
+  load_file(fname);
   load_data(data_fname);
   sprintf(instring, "%s/%s_levels.grayscale", tmp_dir, prefix);
   out = fopen(instring, "w");
@@ -333,6 +300,9 @@ int main(int argc, char **argv) {
 	char outstring2[50];
 	FILE *out;
 
+	sprintf(disp_name,"HF2 Display Receiver"); //default display name
+
+
 	/* read location for the config file if given */
 	if (argc == 2 || argc == 3 ) {
 	  sprintf(config_filename, "%s", argv[1]);
@@ -341,7 +311,7 @@ int main(int argc, char **argv) {
 	}
 	else {
 	  sprintf(config_filename,
-		  "/home/radio/hf2_files/config/hf2_config.input");
+		  "./hf2_config.input");
 	}
 	read_input_file();
 	sprintf(data_fname, "%s/%s.data", tmp_dir, prefix);
@@ -392,50 +362,30 @@ int main(int argc, char **argv) {
 	Fl_Double_Window *win =
 			new Fl_Double_Window(sx, sy, disp_name);
 	win->begin();
-	spec1 = new Ca_Canvas(10, 42, 670, 512, "");
+	spec1 = new Ca_Canvas(10, round(sy*0.0482), round(sx*0.9), 512, "");
 	spec1->box(FL_DOWN_BOX);
 	spec1->align(FL_ALIGN_TOP);
 
-	spec2 = new Ca_Canvas(720, 42, 670, 512, "");
-	spec2->box(FL_DOWN_BOX);
-	spec2->align(FL_ALIGN_TOP);
-
-	freq2 = new Ca_Y_Axis(670, 30, 46, 540, "Freq.\n[kHz]");
+	freq2 = new Ca_Y_Axis(round(sx*0.915), 30, 250, round(sy*0.619), "Freq.\n[kHz]");
 	freq2->box(FL_FLAT_BOX);
 	freq2->align(FL_ALIGN_TOP_RIGHT);
 	freq2->axis_align(CA_RIGHT);
 	freq2->scale(CA_LIN);
-	freq2->minimum(283);
-	freq2->maximum(617);
+	freq2->minimum(freq_min);
+	freq2->maximum(freq_max);
 	//freq2->minimum(0);
 	//freq2->maximum(5000);
 	freq2->label_format("%g");
-	freq2->tick_interval(-20); //fixed ticks setting
+	freq2->tick_interval(-freq_step); //fixed ticks setting
 	freq2->major_step(1);
 	freq2->label_step(1);
 	freq2->axis_color(FL_BLACK);
 
-	freq3 = new Ca_Y_Axis(1380, 30, 46, 540, "Freq.\n[kHz]");
-	freq3->box(FL_FLAT_BOX);
-	freq3->align(FL_ALIGN_TOP_RIGHT);
-	freq3->axis_align(CA_RIGHT);
-	freq3->scale(CA_LIN);
-	freq3->minimum(583);
-	freq3->maximum(917);
-	//freq3->minimum(0);
-	//freq3->maximum(5000);
-	freq3->label_format("%g");
-		freq3->tick_interval(-20); //fixed ticks setting
-		//freq3->tick_interval(-200); //fixed ticks setting
-	freq3->major_step(1);
-	freq3->label_step(1);
-	freq3->axis_color(FL_BLACK);
-
-	canvas = new Ca_Canvas(10, 590, 1300, 250, "Latest Spectra");
+	canvas = new Ca_Canvas(10, round(sy*0.6766), round(sx*0.9), round(sy*0.2866), "Latest Spectra");
 	canvas->box(FL_DOWN_BOX);
 	canvas->align(FL_ALIGN_TOP);
 
-	freq1 = new Ca_X_Axis(10, 840, 1340, 30, "Frequency [kHz]");
+	freq1 = new Ca_X_Axis(10, round(sy*0.963), round(sx*0.937), round(sy*0.0344), "Frequency [kHz]");
 	freq1->align(FL_ALIGN_BOTTOM);
 	freq1->scale(CA_LIN);
 	freq1->minimum(10);
@@ -446,7 +396,7 @@ int main(int argc, char **argv) {
 	freq1->axis_color(FL_BLACK);
 	freq1->axis_align(CA_BOTTOM | CA_LINE);
 
-	counts = new Ca_Y_Axis(1310, 580, 60, 250, "log(counts)");
+	counts = new Ca_Y_Axis(round(sx*0.916), round(sy*0.665), round(sx*0.0419), round(sy*0.287), "log(counts)");
 	counts->align(FL_ALIGN_TOP_LEFT);
 	counts->minimum(0);
 	counts->maximum(plot_max);
@@ -456,49 +406,14 @@ int main(int argc, char **argv) {
 	counts->label_step(1);
 	counts->label_format("%.0f");
 
-	savspec1_button = new Fl_Button(10, 556, 170, 25, "Save spectrogram 1");
+	savspec1_button = new Fl_Button(10, round(sy*0.6376), round(sx*0.1189), round(sy*0.02866), "Save spectrogram 1");
 	savspec1_button->when(FL_WHEN_RELEASE);
 	savspec1_button->callback(savspec_callback,&savspec1);
-
-	savspec2_button = new Fl_Button(720, 556, 170, 25, "Save spectrogram 2");
-	savspec2_button->when(FL_WHEN_RELEASE);
-	savspec2_button->callback(savspec_callback,&savspec2);
-
-	{
-		int specselx = 1350, specsely = 600;
-		Fl_Group* o = new Fl_Group(specselx + 20, specsely, 32, 120);
-		o->box(FL_THIN_UP_FRAME);
-		{
-			show_ch1 = new Fl_Round_Button(specselx + 20, specsely + 0, 30, 30,
-					"1");
-			show_ch1->labelcolor(FL_YELLOW);
-			show_ch1->value(1);
-		}
-		{
-			show_ch2 = new Fl_Round_Button(specselx + 20, specsely + 30, 30, 30,
-					"2");
-			show_ch2->labelcolor(FL_BLUE);
-			show_ch2->value(1);
-		}
-		{
-			show_ch3 = new Fl_Round_Button(specselx + 20, specsely + 60, 30, 30,
-					"3");
-			show_ch3->labelcolor(FL_RED);
-			show_ch3->value(1);
-		}
-		{
-			show_ch4 = new Fl_Round_Button(specselx + 20, specsely + 90, 30, 30,
-					"4");
-			show_ch4->labelcolor(FL_GREEN);
-			show_ch4->value(1);
-		}
-		o->end();
-	}
 
 	// Grayscale #1 Channel Selector
 	{
 		int gs1selx = 10, gs1sely = 4;
-		Fl_Group* o1 = new Fl_Group(gs1selx, gs1sely, 236, 30);
+		Fl_Group* o1 = new Fl_Group(gs1selx, gs1sely, round(sx*0.165), round(sy*0.0344));
 		o1->box(FL_THIN_UP_FRAME);
 		{
 			Fl_Button* p = new Fl_Button(gs1selx + 2, gs1sely + 4, 110, 22, "GS1 Channel:");
@@ -535,54 +450,13 @@ int main(int argc, char **argv) {
 		o1->end();
 	}
 
-	// Grayscale #2 Channel Selector
-	{
-		int gs2selx = 720, gs2sely = 4;
-		Fl_Group* o2 = new Fl_Group(gs2selx, gs2sely, 236, 30);
-		o2->box(FL_THIN_UP_FRAME);
-		{
-			Fl_Button* p = new Fl_Button(gs2selx + 2, gs2sely + 4, 110, 22, "GS2 Channel:");
-			p->box(FL_FLAT_BOX);
-			p->align(FL_ALIGN_INSIDE);
-			p->labeltype(FL_NORMAL_LABEL);
-			p->labelsize(16);
-			p->deactivate();
-		}
-		{
-			o2gray1 = new Fl_Round_Button(gs2selx + 110, gs2sely + 0, 20, 30, "1");
-			o2gray1->type(102);
-			o2gray1->value(0);
-			o2gray1->labelcolor(FL_YELLOW);
-		}
-		{
-			o2gray2 = new Fl_Round_Button(gs2selx + 140, gs2sely + 0, 20, 30, "2");
-			o2gray2->type(102);
-			o2gray2->value(1);
-			o2gray2->labelcolor(FL_BLUE);
-		}
-		{
-			o2gray3 = new Fl_Round_Button(gs2selx + 170, gs2sely + 0, 20, 30, "3");
-			o2gray3->type(102);
-			o2gray3->value(0);
-			o2gray3->labelcolor(FL_RED);
-		}
-		{
-			o2gray4 = new Fl_Round_Button(gs2selx + 200, gs2sely + 0, 20, 30, "4");
-			o2gray4->type(102);
-			o2gray4->value(0);
-			o2gray4->labelcolor(FL_GREEN);
-		}
-		o2->end();
-	}
-
-
 	win->callback(WinQuit_CB, 0);
-	cur_time = new Fl_Output(1150, 4, 202, 28, "Current Time");
+	cur_time = new Fl_Output(round(sx*0.6), 4, 208, 28, "Current Time");
 	cur_time->align(FL_ALIGN_INSIDE);
 	cur_time->value("Current Time");
 	{
-		Fl_Return_Button* exit_button = new Fl_Return_Button(1000, 4, 75, 30,
-				"E&xit");
+	  Fl_Return_Button* exit_button = new Fl_Return_Button(round(sx*.82), 4, 75, 30,
+				"Exit");
 		exit_button->color((Fl_Color) 23);
 		exit_button->callback(WinQuit_CB, 0);
 	}
@@ -600,7 +474,7 @@ int main(int argc, char **argv) {
 		o->labelsize(16);
 		o->deactivate();
 	} */
-	ds = new Flu_Dual_Slider(1150, 554, 130, 20, "");
+	ds = new Flu_Dual_Slider(round(sx*0.804),round(sy*0.635), 130, 20, "");
 	ds->type(FL_HOR_NICE_SLIDER);
 	ds->high_value( plot_max / 100. );
 	ds->low_value(plot_min / 100.);

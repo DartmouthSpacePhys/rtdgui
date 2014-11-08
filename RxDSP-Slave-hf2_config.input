@@ -25,13 +25,26 @@ DATA_DIR
 
 #Display name
 DISP_NAME
-ELF-ALO Display
+RxDSP-Slave Display
 
 #Max freq in Hz
-MAXFREQ
-500
+MAX_FREQ
+917000
 
 #Min freq in Hz
-MINFREQ
+MIN_FREQ
+583000
+
+#Step between tick marks in Hz
+STEP_FREQ
+40
+
+#Max grayscale level
+MAX_GRAY
+60
+
+
+#Min grayscale level
+MIN_GRAY
 0
 

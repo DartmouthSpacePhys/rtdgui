@@ -1,0 +1,16 @@
+We need:
+
+*branch rtdgui_singlechan
+
+*A display name unique to each channel
+-->DISP_NAME
+
+*Single-channel display, not dual
+-->remove everything having to do with second window
+
+*Unique plot boundaries for each channel
+MAXFREQ
+MINFREQ (defaults to 0Hz)
+
+*Removal of three unnecessary FFTs in lower window
+

@@ -9,15 +9,20 @@ SOURCES = #imgsav.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 
 RTDGUI = rtdgui
+RTDGUI_TM1_HF = rtdgui_TM1_HF
 
-all: $(RTDGUI)
+all: $(RTDGUI) $(RTDGUI_TM1_HF)
 
 
 $(RTDGUI): $(OBJECTS)
 	$(CPP) $(INCLUDES) $(LIBDIR) $(LDFLAGS) -o rtdgui rtdgui.cpp $(LDLIBS)
 
+$(RTDGUI_TM1_HF): $(OBJECTS)
+	$(CPP) $(INCLUDES) $(LIBDIR) $(LDFLAGS) -o rtdgui_TM1_HF rtdgui_TM1_HF.cpp $(LDLIBS)
+
+
 .cpp.o: 
 	$(CPP) $(INCLUDES) -o $@ -c $< 
 
 clean:
-	rm rtdgui *.o
+	rm rtdgui rtdgui_TM1_HF *.o
