@@ -229,7 +229,8 @@ void load_data(const char *n) {
 		fclose(in);
 		canvas->redraw();
 	} else {
-		new Ca_Text(800, 1, "No Data File Found!");
+	  char noDataStr[] = "No Data File Found!";
+	  new Ca_Text(800, 1, noDataStr);
 	}
 }
 

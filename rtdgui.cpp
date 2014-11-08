@@ -177,8 +177,6 @@ int read_input_file() {
 			fgets(disp_name, sizeof(disp_name), in);
 			tmp_dir[strlen(disp_name) - 1] = 0;
 			fprintf(stderr, "\nFound DISP_NAME=%s\n", disp_name);
-		} else {
-		  sprintf(disp_name,"HF2 Display Receiver");
 		}
 		if (strncmp(line, "MAX_FREQ", 6) == 0) {
 			fgets(line, sizeof(line), in);
@@ -235,7 +233,8 @@ void load_data(const char *n) {
 		fclose(in);
 		canvas->redraw();
 	} else {
-		new Ca_Text(800, 1, "No Data File Found!");
+	  char noDataStr[] = "No Data File Found!";
+	  new Ca_Text(800, 1, noDataStr);
 	}
 }
 
@@ -332,6 +331,8 @@ int main(int argc, char **argv) {
 	char outstring1[50];
 	char outstring2[50];
 	FILE *out;
+
+	sprintf(disp_name,"HF2 Display Receiver"); //default display name
 
 	/* read location for the config file if given */
 	if (argc == 2 || argc == 3 ) {
