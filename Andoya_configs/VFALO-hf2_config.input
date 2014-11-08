@@ -29,7 +29,7 @@ VF-ALO Display
 
 #Max freq in Hz
 MAX_FREQ
-25000
+4000
 
 #Min freq in Hz
 MIN_FREQ

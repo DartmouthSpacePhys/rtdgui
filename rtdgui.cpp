@@ -35,9 +35,9 @@
 using namespace std;
 
 //uncomment this line for big monitor
-//int sx = 1430, sy = 872, plot_max = 60, plot_min = 0,
+int sx = 1430, sy = 872, plot_max = 60, plot_min = 0;
 //uncomment this line for square monitor
-int sx = 1024, sy = 768, plot_max = 60, plot_min = 0;
+//int sx = 1024, sy = 768, plot_max = 60, plot_min = 0;
 int gray_max = 60, gray_min = 0;
 //static char site_str[50];
 char timestamp_string[100], config_filename[200], tmp_dir[100], prefix[100];

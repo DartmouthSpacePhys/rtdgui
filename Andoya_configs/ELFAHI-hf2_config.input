@@ -25,11 +25,11 @@ DATA_DIR
 
 #Display name
 DISP_NAME
-VLF-B Display
+ELF-AHI Display
 
 #Max freq in Hz
 MAX_FREQ
-40000
+500
 
 #Min freq in Hz
 MIN_FREQ
@@ -37,7 +37,7 @@ MIN_FREQ
 
 #Step between tick marks in Hz
 STEP_FREQ
-5000
+50
 
 #Max grayscale level
 MAX_GRAY

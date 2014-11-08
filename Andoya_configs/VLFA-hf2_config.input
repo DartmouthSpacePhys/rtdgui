@@ -29,7 +29,7 @@ VLF-A Display
 
 #Max freq in Hz
 MAX_FREQ
-250000
+40000
 
 #Min freq in Hz
 MIN_FREQ
@@ -37,7 +37,7 @@ MIN_FREQ
 
 #Step between tick marks in Hz
 STEP_FREQ
-10000
+5000
 
 #Max grayscale level
 MAX_GRAY

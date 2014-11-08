@@ -366,13 +366,13 @@ int main(int argc, char **argv) {
 	spec1->box(FL_DOWN_BOX);
 	spec1->align(FL_ALIGN_TOP);
 
-	freq1 = new Ca_Y_Axis(round(sx*0.915), 20, 250, 610, "Freq.\n[kHz]");
+	freq1 = new Ca_Y_Axis(round(sx*0.915), 20, 250, 610, "Freq.\n[Hz]");
 	freq1->box(FL_FLAT_BOX);
 	freq1->align(FL_ALIGN_TOP_RIGHT);
 	freq1->axis_align(CA_RIGHT);
 	freq1->scale(CA_LIN);
-	freq1->minimum(freq_min/1000);
-	freq1->maximum(freq_max/1000);
+	freq1->minimum(freq_min);
+	freq1->maximum(freq_max);
 	//freq1->minimum(0);
 	//freq1->maximum(5000);
 	freq1->label_format("%g");
@@ -385,11 +385,11 @@ int main(int argc, char **argv) {
 	canvas->box(FL_DOWN_BOX);
 	canvas->align(FL_ALIGN_TOP);
 
-	freq_counts = new Ca_X_Axis(10, round(sy*0.963), round(sx*0.937), round(sy*0.0344), "Frequency [kHz]");
+	freq_counts = new Ca_X_Axis(10, round(sy*0.963), round(sx*0.937), round(sy*0.0344), "Frequency [Hz]");
 	freq_counts->align(FL_ALIGN_BOTTOM);
 	freq_counts->scale(CA_LIN);
-	freq_counts->minimum(freq_min/1000);
-	freq_counts->maximum(freq_max/1000);
+	freq_counts->minimum(freq_min);
+	freq_counts->maximum(freq_max);
 	freq_counts->label_format("%g");
 	freq_counts->major_step(2000);
 	freq_counts->label_step(2000);
