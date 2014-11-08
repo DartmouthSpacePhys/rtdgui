@@ -67,8 +67,8 @@ Fl_Shared_Image *img1, *img2;
 unsigned long t_count, c_count;
 
 Ca_Canvas *canvas, *spec1;
-Ca_X_Axis *freq1;
-Ca_Y_Axis *counts, *freq2;
+Ca_X_Axis *freq_counts;
+Ca_Y_Axis *counts, *freq1;
 
 void plot_level_callback(Fl_Widget*, void*) {
 	static char outstring[50];
@@ -366,37 +366,37 @@ int main(int argc, char **argv) {
 	spec1->box(FL_DOWN_BOX);
 	spec1->align(FL_ALIGN_TOP);
 
-	freq2 = new Ca_Y_Axis(round(sx*0.915), 30, 250, round(sy*0.619), "Freq.\n[kHz]");
-	freq2->box(FL_FLAT_BOX);
-	freq2->align(FL_ALIGN_TOP_RIGHT);
-	freq2->axis_align(CA_RIGHT);
-	freq2->scale(CA_LIN);
-	freq2->minimum(freq_min);
-	freq2->maximum(freq_max);
-	//freq2->minimum(0);
-	//freq2->maximum(5000);
-	freq2->label_format("%g");
-	freq2->tick_interval(-freq_step); //fixed ticks setting
-	freq2->major_step(1);
-	freq2->label_step(1);
-	freq2->axis_color(FL_BLACK);
+	freq1 = new Ca_Y_Axis(round(sx*0.915), 20, 250, 610, "Freq.\n[kHz]");
+	freq1->box(FL_FLAT_BOX);
+	freq1->align(FL_ALIGN_TOP_RIGHT);
+	freq1->axis_align(CA_RIGHT);
+	freq1->scale(CA_LIN);
+	freq1->minimum(freq_min/1000);
+	freq1->maximum(freq_max/1000);
+	//freq1->minimum(0);
+	//freq1->maximum(5000);
+	freq1->label_format("%g");
+	freq1->tick_interval(-freq_step/1000); //fixed ticks setting
+	freq1->major_step(1);
+	freq1->label_step(1);
+	freq1->axis_color(FL_BLACK);
 
 	canvas = new Ca_Canvas(10, round(sy*0.6766), round(sx*0.9), round(sy*0.2866), "Latest Spectra");
 	canvas->box(FL_DOWN_BOX);
 	canvas->align(FL_ALIGN_TOP);
 
-	freq1 = new Ca_X_Axis(10, round(sy*0.963), round(sx*0.937), round(sy*0.0344), "Frequency [kHz]");
-	freq1->align(FL_ALIGN_BOTTOM);
-	freq1->scale(CA_LIN);
-	freq1->minimum(10);
-	freq1->maximum(5000);
-	freq1->label_format("%g");
-	freq1->major_step(2000);
-	freq1->label_step(2000);
-	freq1->axis_color(FL_BLACK);
-	freq1->axis_align(CA_BOTTOM | CA_LINE);
+	freq_counts = new Ca_X_Axis(10, round(sy*0.963), round(sx*0.937), round(sy*0.0344), "Frequency [kHz]");
+	freq_counts->align(FL_ALIGN_BOTTOM);
+	freq_counts->scale(CA_LIN);
+	freq_counts->minimum(freq_min/1000);
+	freq_counts->maximum(freq_max/1000);
+	freq_counts->label_format("%g");
+	freq_counts->major_step(2000);
+	freq_counts->label_step(2000);
+	freq_counts->axis_color(FL_BLACK);
+	freq_counts->axis_align(CA_BOTTOM | CA_LINE);
 
-	counts = new Ca_Y_Axis(round(sx*0.916), round(sy*0.665), round(sx*0.0419), round(sy*0.287), "log(counts)");
+	counts = new Ca_Y_Axis(round(sx*0.916), round(sy*0.68), round(sx*0.0419), round(sy*0.287), "log(counts)");
 	counts->align(FL_ALIGN_TOP_LEFT);
 	counts->minimum(0);
 	counts->maximum(plot_max);
